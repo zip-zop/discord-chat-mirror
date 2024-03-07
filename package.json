@@ -9,7 +9,7 @@
         "compile": "tsc --build tsconfig.json",
         "lint": "eslint . --ignore-path .gitignore --ext .ts",
         "lint:fix": "npm run lint -- --fix",
-        "start": "node --env-file .env --es-module-specifier-resolution=node .",
+        "start": "node --env-file=.env --es-module-specifier-resolution=node .",
         "start:dev": "rimraf ./dist && npm run compile && npm start"
     },
     "repository": {
