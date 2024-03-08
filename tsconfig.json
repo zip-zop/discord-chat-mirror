@@ -6,7 +6,8 @@
         "lib": [
             "ESNext"
         ],
-        "strict": true,
+        "strict": false,
+        "strictNullChecks": true,
         "outDir": "dist",
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,

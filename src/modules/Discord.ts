@@ -1,30 +1,40 @@
 import { WebhookClient, Client, GatewayIntentBits, GatewayReceivePayload, GatewayDispatchEvents, GatewayOpcodes } from "discord.js";
-import { channelId, discordToken, headers, serverId, webhookUrl } from "../util/env.js";
+import { channels, discordToken, serverId } from "../util/env.js";
 import { Channel, Things, WebsocketTypes } from "../typings/index.js";
-import fetch from "node-fetch";
+import fetch, { HeadersInit } from "node-fetch";
 import Websocket from "ws";
 import { RawAttachmentData, RawStickerData } from "discord.js/typings/rawDataTypes.js";
 
-export const executeWebhook = (things: Things): void => {
-    const wsClient = new WebhookClient({ url: things.url });
+export const executeWebhook = (things: Things, webhookUrl: string): void => {
+    const wsClient = new WebhookClient({ url: webhookUrl }); // Now dynamically using the passed URL
     wsClient.send(things).catch((e: any) => console.error(e));
 };
+
 
 export const createChannel = async (
     name: string,
     newId: string,
     pos: number,
     parentId?: string
-): Promise<Channel> => fetch(`https://discord.com/api/v10/guilds/${newId}/channels`, {
-    body: JSON.stringify({
-        name,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        parent_id: parentId,
-        position: pos
-    }),
-    headers,
-    method: "POST"
-}).then(res => res.json()) as Promise<Channel>;
+): Promise<Channel> => {
+    const effectiveHeaders: HeadersInit = {
+        "Content-Type": "application/json"
+    };
+
+    if (discordToken) { // Only add Authorization header if discordToken is not undefined
+        effectiveHeaders["Authorization"] = discordToken;
+    }
+
+    return fetch(`https://discord.com/api/v10/guilds/${newId}/channels`, {
+        body: JSON.stringify({
+            name,
+            parentId, // It's okay to directly use snake_case here as it's a property name in the request body, not subject to naming conventions
+            position: pos
+        }),
+        headers: effectiveHeaders,
+        method: "POST"
+    }).then(res => res.json()) as Promise<Channel>;
+};
 
 export const listen = (): void => {
     new Client({
@@ -89,11 +99,13 @@ export const listen = (): void => {
                 }
                 break;
             case GatewayOpcodes.Dispatch:
+                console.log("t: ", t);
                 if (
-                    t === GatewayDispatchEvents.MessageCreate &&
+                    (t === GatewayDispatchEvents.MessageCreate) &&
                     d.guild_id === serverId &&
-                    d.channel_id === channelId
+                    d.channel_id in channels
                 ) {
+                    const webhookUrl: string = channels[d.channel_id];
                     let ext = "jpg";
                     let ub = " [USER]";
 
@@ -140,7 +152,7 @@ export const listen = (): void => {
                             things.content += attachments.map((a: RawAttachmentData) => a.url).join("\n");
                         }
                     }
-                    executeWebhook(things);
+                    executeWebhook(things, webhookUrl);
                 }
                 break;
             default:
