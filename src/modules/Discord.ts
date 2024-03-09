@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { WebhookClient, Client, GatewayIntentBits, GatewayReceivePayload, GatewayDispatchEvents, GatewayOpcodes } from "discord.js";
 import { channels, discordToken, serverId } from "../util/env.js";
 import { Channel, Things, WebsocketTypes } from "../typings/index.js";
@@ -58,7 +59,6 @@ export const listen = (): void => {
     ws.on("message", (data: [any]) => {
         const payload: GatewayReceivePayload = JSON.parse(data.toString());
         const { op, d, s, t } = payload;
-
         switch (op) {
             case GatewayOpcodes.Hello:
                 try {
@@ -99,16 +99,12 @@ export const listen = (): void => {
                 }
                 break;
             case GatewayOpcodes.Dispatch:
-                console.log("t: ", t);
                 if (
                     (t === GatewayDispatchEvents.MessageCreate) &&
                     d.guild_id === serverId &&
                     d.channel_id in channels
                 ) {
-                    const webhookUrl: string = channels[d.channel_id];
-                    let ext = "jpg";
-                    let ub = " [USER]";
-
+                    // Check if locked message.
                     const {
                         content,
                         attachments,
@@ -116,9 +112,41 @@ export const listen = (): void => {
                         sticker_items,
                         author
                     } = d;
+                    if (author.id === "1023602697238237195" && content.includes("Press the button to unlock the content...")) {
+                        console.log("Locked message");
+                        const unlockMessagePayload = {
+                            type: 3, // Indicates a button interaction
+                            guild_id: serverId,
+                            channel_id: d.channel_id,
+                            message_id: d.id,
+                            data: {
+                                component_type: 2,
+                                custom_id: "trade:7942" // Replace with the custom ID of the button
+                            }
+                        };
+                        const options = {
+                            method: "POST",
+                            headers: {
+                                Authorization: discordToken ?? "",
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(unlockMessagePayload)
+                        };
+
+                        fetch("https://discord.com/api/v10/interactions", options)
+                            .then(response => response.json())
+                            .then((res: any) => {
+                                console.log("Button click simulated:", res);
+                            })
+                            .catch(error => {
+                                console.error("Error simulating button click:", error);
+                            });
+                    }
+                    const webhookUrl: string = channels[d.channel_id];
+                    let ext = "jpg";
+                    let ub = " [USER]";
                     const { avatar, username, discriminator: discriminatorRaw, id } = author;
                     let discriminator: string | null = discriminatorRaw;
-
                     if (discriminator === "0") {
                         discriminator = null;
                     } else {
