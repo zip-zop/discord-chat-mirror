@@ -1,3 +1,3 @@
-import { listen } from "./modules/Discord.js";
+import { listenToWebSocket, initialWS } from "./modules/Discord.js";
 
-listen();
+listenToWebSocket(initialWS);
