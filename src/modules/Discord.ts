@@ -110,9 +110,6 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                     d.guild_id === serverId &&
                     d.channel_id in channels
                 ) {
-                    console.log("d: ", d);
-                    console.log("--------");
-                    // Check if locked message.
                     const {
                         content,
                         attachments,
@@ -120,40 +117,6 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                         sticker_items,
                         author
                     } = d;
-                    console.log("author: ", author);
-                    console.log("content: ", content);
-                    console.log("condition1: ", author.id === "1023602697238237195");
-                    console.log("condition2: ", content.includes("Press the button to unlock the content..."));
-                    if (author.id === "1023602697238237195" && content.includes("Press the button to unlock the content...")) {
-                        console.log("Locked message");
-                        const unlockMessagePayload = {
-                            type: 3, // Indicates a button interaction
-                            guild_id: serverId,
-                            channel_id: d.channel_id,
-                            message_id: d.id,
-                            data: {
-                                component_type: 2,
-                                custom_id: "trade:7942" // Replace with the custom ID of the button
-                            }
-                        };
-                        const options = {
-                            method: "POST",
-                            headers: {
-                                Authorization: discordToken ?? "",
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(unlockMessagePayload)
-                        };
-
-                        fetch("https://discord.com/api/v10/interactions", options)
-                            .then(response => response.json())
-                            .then((res: any) => {
-                                console.log("Button click simulated:", res);
-                            })
-                            .catch(error => {
-                                console.error("Error simulating button click:", error);
-                            });
-                    }
                     const webhookUrl: string = channels[d.channel_id];
                     let ext = "jpg";
                     let ub = " [USER]";
@@ -192,6 +155,7 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                             things.content += attachments.map((a: RawAttachmentData) => a.url).join("\n");
                         }
                     }
+                    console.log("Message (things): ", things)
                     executeWebhook(things, webhookUrl);
                 }
                 break;
@@ -201,10 +165,7 @@ export const listenToWebSocket = (ws: WebSocket): void => {
     };
 
     ws.onclose = () => {
-        // Clear heartbeat interval on WebSocket close
         if (heartbeatInterval) clearInterval(heartbeatInterval);
-        console.log("WebSocket connection closed. Attempting to reconnect...");
-        console.log("~~~~RECONNECTING~~~~");
         reconnect(); // Attempt to reconnect
     };
 };
