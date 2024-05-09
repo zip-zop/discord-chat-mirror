@@ -33,7 +33,7 @@ addToChannelsObject(CH7, channels);
 addToChannelsObject(CH8, channels);
 addToChannelsObject(CH9, channels);
 
-console.log("channels: ", channels)
+console.log("channels: ", channels);
 
 const headers = {
     "Content-Type": "application/json",
