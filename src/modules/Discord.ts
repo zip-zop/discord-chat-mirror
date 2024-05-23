@@ -155,7 +155,7 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                             things.content += attachments.map((a: RawAttachmentData) => a.url).join("\n");
                         }
                     }
-                    console.log("Message (things): ", things);
+                    console.log("Message: ", things);
                     executeWebhook(things, webhookUrl);
                 }
                 break;
