@@ -9,7 +9,7 @@
         "compile": "tsc --build tsconfig.json",
         "lint": "eslint . --ignore-path .gitignore --ext .ts",
         "lint:fix": "npm run lint -- --fix",
-        "start": "node --env-file=.env --es-module-specifier-resolution=node .",
+        "start": "node --es-module-specifier-resolution=node .",
         "start:dev": "rimraf ./dist && npm run compile && npm start"
     },
     "repository": {
@@ -44,6 +44,7 @@
     },
     "dependencies": {
         "discord.js": "^14.14.1",
+        "dotenv": "^16.4.5",
         "jsonfile": "^6.1.0",
         "node-fetch": "^3.3.2",
         "ws": "^8.16.0"
