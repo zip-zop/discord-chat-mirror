@@ -6,7 +6,7 @@ import Websocket, { WebSocket, MessageEvent } from "ws";
 import { RawAttachmentData, RawStickerData } from "discord.js/typings/rawDataTypes.js";
 
 // Define appropriate types
-type AttachmentData = RawAttachmentData & { url: string; size: number };
+type AttachmentData = RawAttachmentData & { url: string, size: number };
 type StickerData = RawStickerData & { id: string };
 
 export const executeWebhook = (things: Things, webhookUrl: string): void => {
