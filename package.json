@@ -23,8 +23,7 @@
     },
     "homepage": "https://github.com/Stegripe/discord-chat-mirror-ext#readme",
     "engines": {
-        "node": ">=20.6.0",
-        "pnpm": ">=8.0.0"
+        "node": ">=20.6.0"
     },
     "eslintConfig": {
         "extends": "@clytage/eslint-config/typescript",
