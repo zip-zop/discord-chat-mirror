@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -14,7 +14,7 @@ const {
     CH6,
     CH7,
     CH8,
-    CH9,
+    CH9
 } = process.env;
 
 // Function to parse CH environment variables and add them to a given object

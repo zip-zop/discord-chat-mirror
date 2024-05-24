@@ -12,8 +12,6 @@ export const executeWebhook = (things: Things, webhookUrl: string): void => {
 };
 
 
-
-
 export const createChannel = async (
     name: string,
     newId: string,
@@ -60,12 +58,12 @@ export const listenToWebSocket = (ws: WebSocket): void => {
     ws.onopen = () => {
         console.log("Connected to the Discord API.");
     };
-    
+
     ws.onmessage = (event: MessageEvent) => {
         const dataString = parseEventData(event);
         const payload: GatewayReceivePayload = JSON.parse(dataString);
         const { op, d, s, t } = payload;
-        
+
         switch (op) {
             case GatewayOpcodes.Hello:
                 try {
@@ -79,7 +77,7 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                             console.log("Connection to Discord gateway is unresponsive.");
                         }
                     }, d.heartbeat_interval);
-                    
+
                     // Authenticate with the Discord API
                     if (!authenticated) {
                         authenticated = true;
@@ -181,166 +179,166 @@ function reconnect(): void {
 
 export const initialWS: WebSocket = new Websocket("wss://gateway.discord.gg/?v=10&encoding=json");
 
-// // export const listen = (): void => {
-//     new Client({
-//         intents: [
-//             GatewayIntentBits.Guilds,
-//             GatewayIntentBits.GuildMembers,
-//             GatewayIntentBits.GuildMessages,
-//             GatewayIntentBits.DirectMessages,
-//             GatewayIntentBits.MessageContent
-//         ],
-//         closeTimeout: 6000
-//     });
+/* // export const listen = (): void => {
+       new Client({
+           intents: [
+               GatewayIntentBits.Guilds,
+               GatewayIntentBits.GuildMembers,
+               GatewayIntentBits.GuildMessages,
+               GatewayIntentBits.DirectMessages,
+               GatewayIntentBits.MessageContent
+           ],
+           closeTimeout: 6000
+       }); */
 
-//     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-//     const ws: Websocket = new Websocket("wss://gateway.discord.gg/?v=10&encoding=json");
-//     let authenticated = false;
-//     let heartbeatInterval: NodeJS.Timeout | null = null;
-//     let lastHeartbeatAck: number | null = null;
-//     ws.on("open", () => {
-//         console.log("Connected to the Discord API.");
-//     });
-//     ws.onclose = () => {
-//         // Clear heartbeat interval on WebSocket close
-//         if (heartbeatInterval) clearInterval(heartbeatInterval);
-//         console.log("WebSocket connection closed. Attempting to reconnect...");
-//         // Implement logic here to attempt reconnection
-//     };
-//     ws.on("message", (data: [any]) => {
-//         const payload: GatewayReceivePayload = JSON.parse(data.toString());
-//         const { op, d, s, t } = payload;
-//         switch (op) {
-//             case GatewayOpcodes.Hello:
-//                 try {
-//                     // Start sending heartbeats
-//                     heartbeatInterval = setInterval(() => {
-//                         ws.send(JSON.stringify({ op: GatewayOpcodes.Heartbeat, d: s }));
+/*     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+       const ws: Websocket = new Websocket("wss://gateway.discord.gg/?v=10&encoding=json");
+       let authenticated = false;
+       let heartbeatInterval: NodeJS.Timeout | null = null;
+       let lastHeartbeatAck: number | null = null;
+       ws.on("open", () => {
+           console.log("Connected to the Discord API.");
+       });
+       ws.onclose = () => {
+           // Clear heartbeat interval on WebSocket close
+           if (heartbeatInterval) clearInterval(heartbeatInterval);
+           console.log("WebSocket connection closed. Attempting to reconnect...");
+           // Implement logic here to attempt reconnection
+       };
+       ws.on("message", (data: [any]) => {
+           const payload: GatewayReceivePayload = JSON.parse(data.toString());
+           const { op, d, s, t } = payload;
+           switch (op) {
+               case GatewayOpcodes.Hello:
+                   try {
+                       // Start sending heartbeats
+                       heartbeatInterval = setInterval(() => {
+                           ws.send(JSON.stringify({ op: GatewayOpcodes.Heartbeat, d: s })); */
 
-//                         // Check for unresponsive connection
-//                         const currentTime = Date.now();
-//                         if (lastHeartbeatAck && currentTime - lastHeartbeatAck > 15000) {
-//                             console.log("Connection to Discord gateway is unresponsive.");
-//                         }
-//                     }, d.heartbeat_interval);
-                    
-//                     // Authenticate with the Discord API
-//                     if (!authenticated) {
-//                         authenticated = true;
-//                         ws.send(JSON.stringify({
-//                             op: GatewayOpcodes.Identify,
-//                             d: {
-//                                 token: discordToken,
-//                                 properties: {
-//                                     $os: "linux",
-//                                     $browser: "test",
-//                                     $device: "test"
-//                                 }
-//                             }
-//                         }));
-//                     }
-//                 } catch (e) {
-//                     console.error("Error sending heartbeat or identifying:", e);
-//                     if (heartbeatInterval) clearInterval(heartbeatInterval);
-//                 }
-//                 break;
-//             case GatewayOpcodes.HeartbeatAck:
-//                 // Update last heartbeat acknowledgement time
-//                 lastHeartbeatAck = Date.now();
-//                 break;
-//             case GatewayOpcodes.Dispatch:
-//                 if (
-//                     (t === GatewayDispatchEvents.MessageCreate) &&
-//                     d.guild_id === serverId &&
-//                     d.channel_id in channels
-//                 ) {
-//                     console.log("d: ", d);
-//                     console.log("--------");
-//                     // Check if locked message.
-//                     const {
-//                         content,
-//                         attachments,
-//                         embeds,
-//                         sticker_items,
-//                         author
-//                     } = d;
-//                     console.log("author: ", author);
-//                     console.log("content: ", content);
-//                     console.log("condition1: ", author.id === "1023602697238237195");
-//                     console.log("condition2: ", content.includes("Press the button to unlock the content..."));
-//                     if (author.id === "1023602697238237195" && content.includes("Press the button to unlock the content...")) {
-//                         console.log("Locked message");
-//                         const unlockMessagePayload = {
-//                             type: 3, // Indicates a button interaction
-//                             guild_id: serverId,
-//                             channel_id: d.channel_id,
-//                             message_id: d.id,
-//                             data: {
-//                                 component_type: 2,
-//                                 custom_id: "trade:7942" // Replace with the custom ID of the button
-//                             }
-//                         };
-//                         const options = {
-//                             method: "POST",
-//                             headers: {
-//                                 Authorization: discordToken ?? "",
-//                                 "Content-Type": "application/json"
-//                             },
-//                             body: JSON.stringify(unlockMessagePayload)
-//                         };
+/*                         // Check for unresponsive connection
+                           const currentTime = Date.now();
+                           if (lastHeartbeatAck && currentTime - lastHeartbeatAck > 15000) {
+                               console.log("Connection to Discord gateway is unresponsive.");
+                           }
+                       }, d.heartbeat_interval); */
 
-//                         fetch("https://discord.com/api/v10/interactions", options)
-//                             .then(response => response.json())
-//                             .then((res: any) => {
-//                                 console.log("Button click simulated:", res);
-//                             })
-//                             .catch(error => {
-//                                 console.error("Error simulating button click:", error);
-//                             });
-//                     }
-//                     const webhookUrl: string = channels[d.channel_id];
-//                     let ext = "jpg";
-//                     let ub = " [USER]";
-//                     const { avatar, username, discriminator: discriminatorRaw, id } = author;
-//                     let discriminator: string | null = discriminatorRaw;
-//                     if (discriminator === "0") {
-//                         discriminator = null;
-//                     } else {
-//                         discriminator = `#${discriminator}`;
-//                     }
+/*                     // Authenticate with the Discord API
+                       if (!authenticated) {
+                           authenticated = true;
+                           ws.send(JSON.stringify({
+                               op: GatewayOpcodes.Identify,
+                               d: {
+                                   token: discordToken,
+                                   properties: {
+                                       $os: "linux",
+                                       $browser: "test",
+                                       $device: "test"
+                                   }
+                               }
+                           }));
+                       }
+                   } catch (e) {
+                       console.error("Error sending heartbeat or identifying:", e);
+                       if (heartbeatInterval) clearInterval(heartbeatInterval);
+                   }
+                   break;
+               case GatewayOpcodes.HeartbeatAck:
+                   // Update last heartbeat acknowledgement time
+                   lastHeartbeatAck = Date.now();
+                   break;
+               case GatewayOpcodes.Dispatch:
+                   if (
+                       (t === GatewayDispatchEvents.MessageCreate) &&
+                       d.guild_id === serverId &&
+                       d.channel_id in channels
+                   ) {
+                       console.log("d: ", d);
+                       console.log("--------");
+                       // Check if locked message.
+                       const {
+                           content,
+                           attachments,
+                           embeds,
+                           sticker_items,
+                           author
+                       } = d;
+                       console.log("author: ", author);
+                       console.log("content: ", content);
+                       console.log("condition1: ", author.id === "1023602697238237195");
+                       console.log("condition2: ", content.includes("Press the button to unlock the content..."));
+                       if (author.id === "1023602697238237195" && content.includes("Press the button to unlock the content...")) {
+                           console.log("Locked message");
+                           const unlockMessagePayload = {
+                               type: 3, // Indicates a button interaction
+                               guild_id: serverId,
+                               channel_id: d.channel_id,
+                               message_id: d.id,
+                               data: {
+                                   component_type: 2,
+                                   custom_id: "trade:7942" // Replace with the custom ID of the button
+                               }
+                           };
+                           const options = {
+                               method: "POST",
+                               headers: {
+                                   Authorization: discordToken ?? "",
+                                   "Content-Type": "application/json"
+                               },
+                               body: JSON.stringify(unlockMessagePayload)
+                           }; */
 
-//                     if (avatar?.startsWith("a_")) ext = "gif";
-//                     if (author.bot) ub = " [BOT]";
+/*                         fetch("https://discord.com/api/v10/interactions", options)
+                               .then(response => response.json())
+                               .then((res: any) => {
+                                   console.log("Button click simulated:", res);
+                               })
+                               .catch(error => {
+                                   console.error("Error simulating button click:", error);
+                               });
+                       }
+                       const webhookUrl: string = channels[d.channel_id];
+                       let ext = "jpg";
+                       let ub = " [USER]";
+                       const { avatar, username, discriminator: discriminatorRaw, id } = author;
+                       let discriminator: string | null = discriminatorRaw;
+                       if (discriminator === "0") {
+                           discriminator = null;
+                       } else {
+                           discriminator = `#${discriminator}`;
+                       } */
 
-//                     const things: Things = {
-//                         avatarURL: avatar
-//                             ? `https://cdn.discordapp.com/avatars/${id}/${avatar}.${ext}`
-//                             : `https://cdn.discordapp.com/embed/avatars/${(BigInt(id) >> 22n) % 6n}.png`,
-//                         content: content ? content : "** **\n",
-//                         url: webhookUrl,
-//                         username: `${username}${discriminator ?? ""}${ub}`
-//                     };
+/*                     if (avatar?.startsWith("a_")) ext = "gif";
+                       if (author.bot) ub = " [BOT]"; */
 
-//                     if (embeds[0]) {
-//                         things.embeds = embeds;
-//                     } else if (sticker_items) {
-//                         things.files = sticker_items.map(
-//                             (a: RawStickerData) => `https://media.discordapp.net/stickers/${a.id}.webp`
-//                         );
-//                     } else if (attachments[0]) {
-//                         const fileSizeInBytes = Math.max(...attachments.map((a: RawAttachmentData) => a.size));
-//                         const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
-//                         if (fileSizeInMegabytes < 8) {
-//                             things.files = attachments.map((a: RawAttachmentData) => a.url);
-//                         } else {
-//                             things.content += attachments.map((a: RawAttachmentData) => a.url).join("\n");
-//                         }
-//                     }
-//                     executeWebhook(things, webhookUrl);
-//                 }
-//                 break;
-//             default:
-//                 break;
-//         }
-//     });
-// // };
+/*                     const things: Things = {
+                           avatarURL: avatar
+                               ? `https://cdn.discordapp.com/avatars/${id}/${avatar}.${ext}`
+                               : `https://cdn.discordapp.com/embed/avatars/${(BigInt(id) >> 22n) % 6n}.png`,
+                           content: content ? content : "** **\n",
+                           url: webhookUrl,
+                           username: `${username}${discriminator ?? ""}${ub}`
+                       }; */
+
+/*                     if (embeds[0]) {
+                           things.embeds = embeds;
+                       } else if (sticker_items) {
+                           things.files = sticker_items.map(
+                               (a: RawStickerData) => `https://media.discordapp.net/stickers/${a.id}.webp`
+                           );
+                       } else if (attachments[0]) {
+                           const fileSizeInBytes = Math.max(...attachments.map((a: RawAttachmentData) => a.size));
+                           const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
+                           if (fileSizeInMegabytes < 8) {
+                               things.files = attachments.map((a: RawAttachmentData) => a.url);
+                           } else {
+                               things.content += attachments.map((a: RawAttachmentData) => a.url).join("\n");
+                           }
+                       }
+                       executeWebhook(things, webhookUrl);
+                   }
+                   break;
+               default:
+                   break;
+           }
+       });
+   // }; */
