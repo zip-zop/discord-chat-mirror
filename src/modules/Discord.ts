@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { WebhookClient, GatewayReceivePayload, GatewayDispatchEvents, GatewayOpcodes } from "discord.js";
 import { channels, discordToken, serverId } from "../util/env.js";
 import { Channel, Things } from "../typings/index.js";
@@ -5,9 +6,15 @@ import fetch, { HeadersInit } from "node-fetch";
 import Websocket, { WebSocket, MessageEvent } from "ws";
 import { RawAttachmentData, RawStickerData } from "discord.js/typings/rawDataTypes.js";
 
-// Define appropriate types
-type AttachmentData = RawAttachmentData & { url: string, size: number };
-type StickerData = RawStickerData & { id: string };
+// Define proper types for attachment and sticker data
+type ProperAttachmentData = {
+  url: string;
+  size: number;
+};
+
+type ProperStickerData = {
+  id: string;
+};
 
 export const executeWebhook = (things: Things, webhookUrl: string): void => {
     const wsClient = new WebhookClient({ url: webhookUrl }); // Now dynamically using the passed URL
@@ -31,7 +38,7 @@ export const createChannel = async (
     return fetch(`https://discord.com/api/v10/guilds/${newId}/channels`, {
         body: JSON.stringify({
             name,
-            parentId, // It's okay to directly use snake_case here as it's a property name in the request body, not subject to naming conventions
+            parent_id: parentId, // Fix for snake_case
             position: pos
         }),
         headers: effectiveHeaders,
@@ -69,7 +76,7 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                 try {
                     // Start sending heartbeats
                     heartbeatInterval = setInterval(() => {
-                        (ws.send as (data: string) => void)(JSON.stringify({ op: GatewayOpcodes.Heartbeat, d: s }));
+                        ws.send(JSON.stringify({ op: GatewayOpcodes.Heartbeat, d: s }));
 
                         // Check for unresponsive connection
                         const currentTime = Date.now();
@@ -81,7 +88,7 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                     // Authenticate with the Discord API
                     if (!authenticated) {
                         authenticated = true;
-                        (ws.send as (data: string) => void)(JSON.stringify({
+                        ws.send(JSON.stringify({
                             op: GatewayOpcodes.Identify,
                             d: {
                                 token: discordToken,
@@ -142,15 +149,15 @@ export const listenToWebSocket = (ws: WebSocket): void => {
                         things.embeds = embeds;
                     } else if (sticker_items) {
                         things.files = sticker_items.map(
-                            (a: StickerData) => `https://media.discordapp.net/stickers/${a.id}.webp`
+                            (a: ProperStickerData) => `https://media.discordapp.net/stickers/${a.id}.webp`
                         );
                     } else if (attachments[0]) {
-                        const fileSizeInBytes = Math.max(...attachments.map((a: AttachmentData) => a.size));
+                        const fileSizeInBytes = Math.max(...attachments.map((a: ProperAttachmentData) => a.size));
                         const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024);
                         if (fileSizeInMegabytes < 8) {
-                            things.files = attachments.map((a: AttachmentData) => a.url);
+                            things.files = attachments.map((a: ProperAttachmentData) => a.url);
                         } else {
-                            things.content += attachments.map((a: AttachmentData) => a.url).join("\n");
+                            things.content += attachments.map((a: ProperAttachmentData) => a.url).join("\n");
                         }
                     }
                     console.log("Message: ", things);
