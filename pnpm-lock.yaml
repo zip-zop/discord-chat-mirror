@@ -20,6 +20,9 @@ importers:
       ws:
         specifier: ^8.16.0
         version: 8.16.0
+      dotenv:
+        specifier: 16.4.5
+        version: 16.4.5
     devDependencies:
       '@clytage/eslint-config':
         specifier: 3.0.1
